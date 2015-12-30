@@ -1,4 +1,4 @@
-
+{-# LANGUAGE BangPatterns #-}
 module Vector (
   Vec3(Vec3),
   add, sub,
@@ -15,8 +15,7 @@ module Vector (
 -- NB: We have a right handed coordinate system.  If x increases to your right, and Y increases downwards then
 -- you are looking in the direction of increasing Z.
 
--- TODO: add strictness and {-# LANGUAGE BangPatterns #-}
-data Vec3 = Vec3 Float Float Float
+data Vec3 = Vec3 !Float !Float !Float
 
 add :: Vec3 -> Vec3 -> Vec3
 add (Vec3 x y z) (Vec3 a b c) = Vec3 (a+x) (b+y) (c+z)

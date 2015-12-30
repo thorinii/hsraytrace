@@ -7,13 +7,11 @@ import Vector
 -------------------------------------------------
 -- 3d Ray: Used as a semi-infinite 3d line.
 
-type Point3 = Vec3
-type Direction3 = Vec3
 type Time = Float
-type Ray = (Point3, Direction3) -- base and direction
+data Ray = Ray !Vec3 !Vec3 -- base and direction
 
-position_at_time :: Ray -> Time -> Point3
-position_at_time (base, dir) t = base `add` (scalarmult dir t)
+position_at_time :: Ray -> Time -> Vec3
+position_at_time (Ray base dir) t = base `add` (scalarmult dir t)
 
 -------------------------------------------------
 -- Generic maths functions
@@ -61,14 +59,14 @@ combine_col (Vec3 r1 g1 b1) (Vec3 r2 g2 b2) = Vec3 (r1*r2) (g1*g2) (b1*b2)
 ---------------------------------------------------------------------------------------
 -- Procedural textures:  Various predefined 3d texture functions
 
-flatred, shinyred, semishinygreen, shinywhite :: Point3 -> Material
+flatred, shinyred, semishinygreen, shinywhite :: Vec3 -> Material
 flatred _ = (red, 0.0, 1.0)
 shinyred _ = (red, 0.3, 0.9)
 semishinygreen _ = (green, 0.5, 0.7)
 shinywhite _ = (white, 0.3, 0.9)
 
 -- alternate 20x20x20 black and white cubes
-checked_matt :: Point3 -> Material
+checked_matt :: Vec3 -> Material
 checked_matt (Vec3 x y z) =
          let xeven = even (truncate (x / 20.0))
              yeven = even (truncate (y / 20.0))
@@ -93,8 +91,8 @@ type Material = (Color, Reflectivity, Diffuseness)
 type Normal = Vec3
 type Radius = Float
 
-data Shape = Sphere Point3 Radius (Point3 -> Material)
-           | Plane Normal Float (Point3 -> Material)
+data Shape = Sphere Vec3 Radius (Vec3 -> Material)
+           | Plane Normal Float (Vec3 -> Material)
 
 -- Plane is defined by a normal (its a 2 sided plane though) and a distance.
 -- The plane coincident with y=5 and normal (0,0,1) has distance -5.
@@ -108,7 +106,7 @@ data Shape = Sphere Point3 Radius (Point3 -> Material)
 
 -- These intersection equations are taken from www.education.siggraph.org/materials/HyperGraph
 
-type Intersection = (Normal, Point3, Ray, Material)
+type Intersection = (Normal, Vec3, Ray, Material)
 
 -- When we calculate reflected rays, they start on the surface of the shape.  Unfortunately,
 -- our limited numerical precision can make them be under the surface and so the reflected
@@ -119,7 +117,7 @@ epsilon = 0.001
 
 
 intersect :: Ray -> Shape -> [(Time, Intersection)]
-intersect ray@(base, dir) (Sphere center rad materialfn) =
+intersect ray@(Ray base dir) (Sphere center rad materialfn) =
     let a = squared_mag dir
         b = 2 * ( dir `dot` (base `sub` center))
         c = (squared_mag (base `sub` center)) - rad^2
@@ -128,7 +126,7 @@ intersect ray@(base, dir) (Sphere center rad materialfn) =
         intersection_at_time t = (normal_at_time t, position_at_time ray t, ray, materialfn (position_at_time ray t))
     in map (\t -> (t,intersection_at_time t)) times
 
-intersect ray@(base, dir) (Plane normal d materialfn) =
+intersect ray@(Ray base dir) (Plane normal d materialfn) =
     let vd = (normalize normal) `dot` dir
         v0 = negate (((normalize normal) `dot` base) + d)
     in if (vd == 0) then []
@@ -145,7 +143,7 @@ closest xs = let select_nearest (t1,i1) (t2,i2) = if (t1<t2) then (t1,i1) else (
 ---------------------------------------------------------------------------------------
 -- Lights:  We have a non-shadowable Directional light and a shadowable spotlight
 data Light = Directional Vec3 Color
-           | Spotlight Point3 Color
+           | Spotlight Vec3 Color
 
 ---------------------------------------------------------------------------------------
 -- Global bindings
@@ -174,11 +172,11 @@ shapes = [ Plane (normalize (Vec3 0 (-1) 0)) 50 shinyred,
 -- Local lighting model
 
 -- Is the light at 'lightpos' visible from point?
-point_is_lit :: Point3 -> Point3 -> Bool
+point_is_lit :: Vec3 -> Vec3 -> Bool
 point_is_lit point lightpos =
             let path = lightpos `sub` point
                 time_at_light = mag path
-                ray = (point, normalize path)
+                ray = (Ray point (normalize path))
                 hits = concat (map (intersect ray) shapes)
                 times = fst (unzip hits)
             in if (null times) then True else (minimum times) > time_at_light
@@ -208,12 +206,12 @@ local_light (normal, hitpoint,_,(materialcol,_,kd)) (Spotlight lightpos lightcol
 -- Ray trace the outgoing reflected ray from an intersection (depth is the level of recursion
 -- which we're at in the ray tracing)
 reflected_ray :: Integer -> Intersection -> Color
-reflected_ray depth (normal, hitpoint, (_, in_ray_dir), (color, kr, _))
+reflected_ray depth (normal, hitpoint, (Ray _ in_ray_dir), (color, kr, _))
    | kr == 0.0 = black
    | otherwise =
          let k = 2 * ((normalize normal) `dot` (normalize (neg in_ray_dir)))
              out_ray_dir = (scalarmult (normalize normal) k) `sub` (neg in_ray_dir)
-             reflected_col = raytrace (depth + 1) (hitpoint, out_ray_dir)
+             reflected_col = raytrace (depth + 1) (Ray hitpoint out_ray_dir)
          in scalarmult reflected_col kr
 
 ---------------------------------------------------------------------------------------
@@ -235,9 +233,9 @@ make_pgm width height xs = "P3\n" ++ show width ++ " " ++ show height ++ "\n255\
 -- pixels on our virtual screen.
 
 -- Camera position, distance to screen, "Looking at" position, up vector
-type View = (Point3, Float, Point3, Vec3)
+type View = (Vec3, Float, Vec3, Vec3)
 
-pixel_grid :: View -> Float -> Float -> [ Point3 ]
+pixel_grid :: View -> Float -> Float -> [ Vec3 ]
 pixel_grid (camerapos, viewdist, lookingat, viewup) width height =
    let grid = [ (Vec3 x y 0) | y <- [0..width-1], x <- [0..height-1] ]
        centering_offset = Vec3 (-width / 2.0) (-height / 2.0) 0
@@ -249,12 +247,12 @@ pixel_grid (camerapos, viewdist, lookingat, viewup) width height =
    in map transform pixel_offsets
 
 -- Parallel projection function which creates rays parallel to the viewing screen
-parallel_projection :: View -> Point3 -> Ray
-parallel_projection (camerapos,_,lookingat,_) point  = (point, normalize (lookingat `sub` camerapos))
+parallel_projection :: View -> Vec3 -> Ray
+parallel_projection (camerapos,_,lookingat,_) point = Ray point (normalize (lookingat `sub` camerapos))
 
 -- Perspective projection which creates rays through (0,0,-distance) through the point
-perspective_projection :: View -> Point3 -> Ray
-perspective_projection (camerapos,_,_,_) point = (point, normalize (point `sub` camerapos))
+perspective_projection :: View -> Vec3 -> Ray
+perspective_projection (camerapos,_,_,_) point = Ray point (normalize (point `sub` camerapos))
 
 ---------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------
