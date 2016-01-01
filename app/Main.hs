@@ -9,6 +9,8 @@ import Data.Maybe
 import Vector
 import qualified Vector as V
 
+import Ray
+
 main :: IO ()
 main = do
   -- let ppmResult = render_to_pgm 500 500
@@ -18,14 +20,6 @@ main = do
 
 -- render :: Camera -> Scene -> Image
 -- render camera scene image = undefined
-
-data Ray = Ray { ray_base :: !Vec3
-               , ray_direction :: !Vec3 }
-  deriving (Show)
-
-ray_pointAtTime :: Ray -> Float -> Vec3
-ray_pointAtTime (Ray base dir) time = base `V.add` (dir `scalarmult` time)
-
 
 data Shape = Sphere { sphere_position :: Vec3
                     , sphere_radius :: Float }
@@ -59,6 +53,9 @@ instance Show Image where
           else (renderPixel p) ++ render px (counter+1)
     in (show width) ++ "x" ++ (show height) ++ " [\n" ++ render pixels 0 ++ "]"
 
+render :: Image
+render = renderImage (cube (Vec3 0 0 5) 1) 40 40 6
+
 renderImage :: Shape -> Int -> Int -> Float -> Image
 renderImage scene width height pixelsPerUnit =
   let renderPixel scene x y =
@@ -77,13 +74,6 @@ makeImage width height pixelValue =
               y = index `P.div` width
       pixels = buildList (width*height) indexValue
   in Image width height pixels
-
-
-makeRay :: Int -> Int -> Int -> Int -> Float -> Ray
-makeRay rangeX rangeY xIndex yIndex pixelsPerUnit =
-  let x = (fromIntegral (xIndex - rangeX `P.div` 2)) / pixelsPerUnit
-      y = (fromIntegral (yIndex - rangeY `P.div` 2)) / pixelsPerUnit
-  in Ray (Vec3 x y 0) (Vec3 0 0 1)
 
 
 buildList :: Int -> (Int -> a) -> [a]
