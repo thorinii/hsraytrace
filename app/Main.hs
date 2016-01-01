@@ -4,6 +4,8 @@ module Main where
 import Prelude
 import qualified Prelude as P
 
+import Data.Maybe
+
 import Vector
 import qualified Vector as V
 
@@ -24,6 +26,7 @@ data Ray = Ray { ray_base :: !Vec3
 ray_pointAtTime :: Ray -> Float -> Vec3
 ray_pointAtTime (Ray base dir) time = base `V.add` (dir `scalarmult` time)
 
+
 data Shape = Sphere { sphere_position :: Vec3
                     , sphere_radius :: Float }
            | Plane { plane_normal :: Vec3
@@ -33,44 +36,91 @@ data Shape = Sphere { sphere_position :: Vec3
   deriving (Show)
 
 cube :: Vec3 -> Float -> Shape
-cube (Vec3 x y z) side = Box (Vec3 (x - half) (y - half) (z - half)) (Vec3 (x + half) (y + half) (z + half))
+cube (Vec3 x y z) side = Box (Vec3 (x - half) (y - half) (z - half))
+                             (Vec3 (x + half) (y + half) (z + half))
   where half = side / 2
 
 
--- These intersection equations are taken from www.education.siggraph.org/materials/HyperGraph
-
-data Intersection = Intersection { intersection_normal :: !Vec3
-                                 , intersection_point :: !Vec3 }
+data Intersection = Intersection { intersection_point :: !Vec3 }
   deriving (Show)
 
--- When we calculate reflected rays, they start on the surface of the shape.  Unfortunately,
--- our limited numerical precision can make them be under the surface and so the reflected
--- ray immediately (at t very close to 0) hits the surface of the shape which it's meant to
--- be going away from.  So, we filter out any intersections which occur at t < epsilon.
+
+type Pixel = Bool
+data Image = Image Int Int [Pixel]
+
+instance Show Image where
+  show (Image width height pixels) =
+    let renderPixel True = "#"
+        renderPixel False = " "
+        render [] _ = ""
+        render (p:px) counter =
+          if counter == width
+          then "\n" ++ (renderPixel p) ++ render px 1
+          else (renderPixel p) ++ render px (counter+1)
+    in (show width) ++ "x" ++ (show height) ++ " [\n" ++ render pixels 0 ++ "]"
+
+renderImage :: Shape -> Int -> Int -> Float -> Image
+renderImage scene width height pixelsPerUnit =
+  let renderPixel scene x y =
+        let ray = makeRay width height x (height-y-1) pixelsPerUnit
+            shape = scene
+            cast = intersect ray shape
+            didHit = isJust cast
+        in didHit
+  in makeImage width height (renderPixel scene)
+
+
+makeImage :: Int -> Int -> (Int -> Int -> Pixel) -> Image
+makeImage width height pixelValue =
+  let indexValue index = pixelValue x y
+        where x = index `mod` width
+              y = index `P.div` width
+      pixels = buildList (width*height) indexValue
+  in Image width height pixels
+
+
+makeRay :: Int -> Int -> Int -> Int -> Float -> Ray
+makeRay rangeX rangeY xIndex yIndex pixelsPerUnit =
+  let x = (fromIntegral (xIndex - rangeX `P.div` 2)) / pixelsPerUnit
+      y = (fromIntegral (yIndex - rangeY `P.div` 2)) / pixelsPerUnit
+  in Ray (Vec3 x y 0) (Vec3 0 0 1)
+
+
+buildList :: Int -> (Int -> a) -> [a]
+buildList size f = reverse $ buildList' size 0 f []
+  where buildList' 0 _ _ acc = acc
+        buildList' size index f acc = buildList' (size-1) (index+1) f (f index : acc)
+
+
+-- intersectionGrid origin width height castsPerUnit -> [Intersection]
+intersectionGrid :: Vec3 -> Float -> Float -> Float -> [Intersection]
+intersectionGrid origin width height castsPerUnit =
+  let rays = rayGrid origin width height castsPerUnit
+  in intersection rays
+
+intersection :: [Ray] -> [Intersection]
+intersection rays =
+  let shape = cube (Vec3 0 0 5) 1
+  in catMaybes $ map (\ray -> intersect ray shape) rays
+
+rayGrid :: Vec3 -> Float -> Float -> Float -> [Ray]
+rayGrid (Vec3 ox oy oz) width height castsPerUnit = do
+  let xCasts = truncate $ width * castsPerUnit :: Int
+      yCasts = truncate $ height * castsPerUnit :: Int
+  xIndex <- [0..xCasts]
+  yIndex <- [0..yCasts]
+  let x = ox + (fromIntegral xIndex) / castsPerUnit - width / 2
+      y = oy + (fromIntegral yIndex) / castsPerUnit - height / 2
+      ray = Ray (Vec3 x y oz) (Vec3 0 0 1)
+  return ray
+
+
+-- Minimum ray distance for an intersection
 epsilon :: Float
 epsilon = 0.001
 
 
 intersect :: Ray -> Shape -> Maybe Intersection
---
--- intersect ray@(Ray base dir) (Sphere center rad materialfn) =
---     let a = squared_mag dir
---         b = 2 * ( dir `dot` (base `sub` center))
---         c = (squared_mag (base `sub` center)) - rad^2
---         times = filter (> epsilon) (roots a b c)
---         normal_at_time t = normalize ((position_at_time ray t) `sub` center)
---         intersection_at_time t = (normal_at_time t, position_at_time ray t, ray, materialfn (position_at_time ray t))
---     in map (\t -> (t,intersection_at_time t)) times
---
--- intersect ray@(Ray base dir) (Plane normal d materialfn) =
---     let vd = (normalize normal) `dot` dir
---         v0 = negate (((normalize normal) `dot` base) + d)
---     in if (vd == 0) then []
---        else let t = v0 / vd
---                 hitpoint = position_at_time ray t
---             in if t > epsilon then [ (t, (if (vd > 0) then (neg normal) else normal, hitpoint, ray, materialfn hitpoint)) ]
---                               else []
-
 -- Algorithm from https://github.com/LWJGL/lwjgl3-wiki/wiki/2.6.1.-Ray-tracing-with-OpenGL-Compute-Shaders-%28Part-I%29#intersection-testing
 intersect ray@(Ray base dir) (Box box_min box_max) =
   let tMin = (box_min `V.sub` base) `V.div` dir
@@ -82,5 +132,5 @@ intersect ray@(Ray base dir) (Box box_min box_max) =
       hit = timeNear > epsilon && timeNear < timeFar
       point = ray_pointAtTime ray timeNear
   in if hit
-     then Just $ Intersection (Vec3 0 0 0) point
+     then Just $ Intersection point
      else Nothing
