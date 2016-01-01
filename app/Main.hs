@@ -24,7 +24,7 @@ main = do
 -- render camera scene image = undefined
 
 animateTimes times =
-  let fps = 30
+  let fps = 10
       delay = 1 * 1000 * 1000 `P.div` fps
       animateTimes' 0 = return ()
       animateTimes' left = do
@@ -43,14 +43,26 @@ render x y z =
 
 renderImage :: Shape -> Int -> Int -> Float -> Image
 renderImage scene width height pixelsPerUnit =
-  let renderPixel scene x y =
-        let ray = makeRay width height x (height-y-1) pixelsPerUnit
+  let castValue x y =
+        let ray = makeRay width height x (fromIntegral height-y-1) pixelsPerUnit
             shape = scene
             cast = intersect ray shape
-            didHit' = isJust cast
-            didHit = par didHit' didHit'
-        in didHit
-  in makeImage width height (renderPixel scene)
+            didHit = isJust cast
+        in if didHit then 1 else 0
+      castValueMany x y =
+        let fx = fromIntegral x
+            fy = fromIntegral y
+            j = 0.2 -- jitter
+            value =
+              castValue (fx-j) (fy-j) + castValue (fx) (fy-j) + castValue (fx+j) (fy-j) +
+              castValue (fx-j) (fy) + castValue (fx) (fy) + castValue (fx+j) (fy) +
+              castValue (fx-j) (fy+j) + castValue (fx) (fy+j) + castValue (fx+j) (fy+j)
+        in value
+      renderPixel x y =
+        let value' = castValueMany x (y*2)
+            value = par value' value'
+        in value
+  in makeImage width height renderPixel
 
 seqList :: [a] -> ()
 seqList [] = ()

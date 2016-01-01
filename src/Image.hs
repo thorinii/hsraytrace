@@ -6,14 +6,12 @@ module Image (
 
 import Data.Vector.Unboxed (Vector, generate, (!))
 
-type Pixel = Bool
+type Pixel = Int
 data Image = Image Int Int (Vector Pixel)
 
 instance Show Image where
   show (Image width height pixels) =
-    let renderPixel True = "#"
-        renderPixel False = " "
-        numberOfPixels = width*height
+    let numberOfPixels = width*height
         render index _ | index == numberOfPixels = ""
         render index counter =
           if counter == width
@@ -21,6 +19,18 @@ instance Show Image where
           else (renderPixel (pixels ! index)) ++ render (index+1) (counter+1)
     in (show width) ++ "x" ++ (show height) ++ " [\n" ++ render 0 0 ++ "]"
 
+renderPixel :: Pixel -> String
+renderPixel value = case value of
+                      0 -> " "
+                      1 -> "."
+                      2 -> ":"
+                      3 -> "-"
+                      4 -> "="
+                      5 -> "+"
+                      6 -> "*"
+                      7 -> "#"
+                      8 -> "%"
+                      _ -> "@"
 
 makeImage :: Int -> Int -> (Int -> Int -> Pixel) -> Image
 makeImage width height pixelValue =
