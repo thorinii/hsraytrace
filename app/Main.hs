@@ -26,7 +26,9 @@ main = do
 
 
 render :: Image
-render = renderImage (cube (Vec3 0 0 5) 1) 40 40 6
+render =
+  let scene = translate (Vec3 0 0 0) $ cube (Vec3 0 0 5) 1
+  in renderImage scene 40 40 6
 
 renderImage :: Shape -> Int -> Int -> Float -> Image
 renderImage scene width height pixelsPerUnit =

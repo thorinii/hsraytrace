@@ -32,3 +32,7 @@ intersect ray@(Ray base dir) (Box box_min box_max) =
   in if hit
      then Just $ Intersection point
      else Nothing
+
+intersect (Ray base dir) (Translate inner translation) =
+  let translatedRay = Ray (base `V.sub` translation) dir
+  in intersect translatedRay inner
