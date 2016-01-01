@@ -1,6 +1,7 @@
 module Intersection (
   Intersection(Intersection),
-  intersect
+  intersect,
+  rotateVector
 ) where
 
 import Prelude as P
@@ -36,3 +37,30 @@ intersect ray@(Ray base dir) (Box box_min box_max) =
 intersect (Ray base dir) (Translate inner translation) =
   let translatedRay = Ray (base `V.sub` translation) dir
   in intersect translatedRay inner
+
+intersect (Ray base dir) (Rotate inner x y z) =
+  let newBase = rotateVector (-x) (-y) (-z) base
+      newDir = rotateVector (-x) (-y) (-z) dir
+      rotatedRay = Ray newBase newDir
+  in intersect rotatedRay inner
+
+rotateVector :: Float -> Float -> Float -> Vec3 -> Vec3
+rotateVector ax ay az (Vec3 vx vy vz) =
+  let cs = cos az
+      sn = sin az
+      vx' = vx * cs - vy * sn
+      vy' = vx * sn + vy * cs
+      vz' = vz
+  in Vec3 vx' vy' vz'
+
+  -- double cs = cos_deg(new_degrees);
+  -- double sn = sin_deg(new_degrees);
+  --
+  -- double translated_x = x - x_origin;
+  -- double translated_y = y - y_origin;
+  --
+  -- double result_x = translated_x * cs - translated_y * sn;
+  -- double result_y = translated_x * sn + translated_y * cs;
+  --
+  -- result_x += x_origin;
+  -- result_y += y_origin;

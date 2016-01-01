@@ -25,9 +25,9 @@ main = do
 -- render camera scene image = undefined
 
 
-render :: Image
-render =
-  let scene = translate (Vec3 0 0 0) $ cube (Vec3 0 0 5) 1
+-- render :: Image
+render angle =
+  let scene = rotate 0 0 angle $ translate (Vec3 2 0 0) $ cube (Vec3 0 0 5) 1
   in renderImage scene 40 40 6
 
 renderImage :: Shape -> Int -> Int -> Float -> Image
