@@ -25,9 +25,9 @@ data Shape = Sphere { sphere_position :: Vec3
   deriving (Show)
 
 
-cube :: Vec3 -> Float -> Shape
-cube (Vec3 x y z) side = Box (Vec3 (x - half) (y - half) (z - half))
-                             (Vec3 (x + half) (y + half) (z + half))
+cube :: Float -> Shape
+cube side = Box (Vec3 (-half) (-half) (-half))
+                (Vec3 half half half)
   where half = side / 2
 
 

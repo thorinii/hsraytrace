@@ -1,131 +1,172 @@
-	Sat Jan  2 09:36 2016 Time and Allocation Profiling Report  (Final)
+	Sat Jan  2 14:23 2016 Time and Allocation Profiling Report  (Final)
 
 	   hsraytrace-exe +RTS -N -p -N8 -RTS
 
-	total time  =        0.21 secs   (794 ticks @ 1000 us, 8 processors)
-	total alloc = 226,897,864 bytes  (excludes profiling overheads)
+	total time  =        0.73 secs   (2687 ticks @ 1000 us, 8 processors)
+	total alloc = 476,803,984 bytes  (excludes profiling overheads)
 
-COST CENTRE                    MODULE       %time %alloc
+COST CENTRE                     MODULE       %time %alloc
 
-intersect                      Intersection  39.9    1.1
-rotateVector                   Intersection  13.6   13.7
-animateTimes.animateTimes'     Main          12.3    5.4
-MAIN                           MAIN           7.3    2.3
-renderImage.renderPixel        Main           5.0   13.5
-show.render                    Image          3.4   24.3
-makeRay                        Ray            3.0    6.9
-renderImage.renderPixel.ray    Main           2.6    0.0
-makeImage.indexValue.x         Image          1.9    3.4
-renderImage.renderPixel.didHit Main           1.9    0.0
-makeImage.pixels               Image          1.4    0.2
-makeImage.indexValue           Image          1.4   13.5
-makeImage.indexValue.y         Image          1.4    3.4
-makeRay.y                      Ray            1.1    0.0
-renderImage.renderPixel.cast   Main           1.0    0.0
-show                           Image          0.4   12.3
+intersect                       Intersection  36.1    1.2
+rotateVector                    Intersection  18.8   26.5
+makeRay                         Ray            6.4    6.6
+animateTimes.animateTimes'      Main           4.5    2.6
+renderImage.castValueMany.value Main           4.4    0.0
+renderImage.castValue           Main           4.1    0.0
+MAIN                            MAIN           3.5    1.7
+normalize                       Vector         3.2   13.2
+makeRay.direction               Ray            2.7   13.2
+makeRay.plateDistance           Ray            2.4    0.0
+mag                             Vector         2.4    0.0
+renderImage.castValueMany       Main           2.2    1.7
+makeImage.indexValue            Image          1.9    6.4
+renderImage.castValue.ray       Main           1.2    0.0
+show.render                     Image          1.0   11.5
+show                            Image          0.6    5.8
+renderImage.castValueMany.fx    Main           0.5    1.7
+makeImage.indexValue.x          Image          0.5    1.6
+makeImage.indexValue.y          Image          0.4    1.6
+renderImage.renderPixel         Main           0.3    4.0
 
 
-                                                                                      individual     inherited
-COST CENTRE                                 MODULE                  no.     entries  %time %alloc   %time %alloc
+                                                                                        individual     inherited
+COST CENTRE                                   MODULE                  no.     entries  %time %alloc   %time %alloc
 
-MAIN                                        MAIN                     71           0    7.3    2.3   100.0  100.0
- main                                       Main                    190           0    0.0    0.0    92.4   97.4
-  animateTimes                              Main                    191           0    0.0    0.0    92.4   97.4
-   animateTimes.animateTimes'               Main                    192         300   12.3    5.4    92.4   97.4
-    animateTimes.animateTimes'.angle        Main                    224         299    0.0    0.0     0.0    0.0
-    seqList                                 Main                    201      493051    0.6    0.0     0.6    0.0
-    animateTimes.animateTimes'.image        Main                    196         299    0.3    0.0    79.5   92.0
-     show                                   Image                   200         299    0.4   12.2     4.2   36.4
-      show.render                           Image                   203      478699    3.4   24.2     3.8   24.2
-       show.renderPixel                     Image                   232      478400    0.4    0.0     0.4    0.0
-      show.numberOfPixels                   Image                   202         299    0.0    0.0     0.0    0.0
-     render                                 Main                    197         299    0.0    0.0    75.1   55.6
-      render.scene                          Main                    218         299    0.0    0.0     0.0    0.0
-       rotate                               Shape                   221         299    0.0    0.0     0.0    0.0
-        rotate.d2r                          Shape                   223         897    0.0    0.0     0.0    0.0
-       translate                            Shape                   219         299    0.0    0.0     0.0    0.0
-      renderImage                           Main                    198         299    0.0    0.0    75.1   55.6
-       renderImage.renderPixel              Main                    216           0    0.0    0.0     0.0    0.0
-        renderImage.renderPixel.shape       Main                    217         299    0.0    0.0     0.0    0.0
-       makeImage                            Image                   199         299    0.1    0.0    75.1   55.6
-        makeImage.pixels                    Image                   204         299    1.4    0.2    74.9   55.6
-         makeImage.indexValue               Image                   205      478400    1.4   13.5    73.6   55.3
-          makeImage.indexValue.x            Image                   210      478432    1.9    3.4     1.9    3.4
-          makeImage.indexValue.y            Image                   209      478408    1.4    3.4     1.4    3.4
-          renderImage.renderPixel           Main                    206      478400    5.0   13.5    68.9   35.1
-           renderImage.renderPixel.didHit'  Main                    231      484850    0.4    0.0     0.4    0.0
-           renderImage.renderPixel.cast     Main                    214      485016    1.0    0.0    54.3   14.8
-            intersect                       Intersection            215     1937850   39.8    1.1    53.3   14.8
-             max                            Vector                  230      484841    0.0    0.0     0.0    0.0
-             z                              Vector                  229      969539    0.0    0.0     0.0    0.0
-             y                              Vector                  228      969559    0.0    0.0     0.0    0.0
-             x                              Vector                  227      969599    0.0    0.0     0.0    0.0
-             min                            Vector                  226      484979    0.0    0.0     0.0    0.0
-             div                            Vector                  225      969848    0.0    0.0     0.0    0.0
-             rotateVector                   Intersection            222      969973   13.5   13.7    13.5   13.7
-             sub                            Vector                  220     1938799    0.0    0.0     0.0    0.0
-           renderImage.renderPixel.ray      Main                    208      485051    2.6    0.0     7.3    6.8
-            makeRay                         Ray                     211      485051    3.0    6.8     4.7    6.8
-             makeRay.y                      Ray                     213      485035    1.1    0.0     1.1    0.0
-             makeRay.x                      Ray                     212      485040    0.5    0.0     0.5    0.0
-           renderImage.renderPixel.didHit   Main                    207      478400    1.9    0.0     1.9    0.0
- CAF                                        Main                    141           0    0.0    0.0     0.3    0.3
-  animateTimes                              Main                    193           0    0.0    0.0     0.0    0.0
-   animateTimes.fps                         Main                    195           1    0.0    0.0     0.0    0.0
-   animateTimes.delay                       Main                    194           1    0.0    0.0     0.0    0.0
-  render                                    Main                    174           0    0.0    0.0     0.0    0.0
-   render.scene                             Main                    175           0    0.0    0.0     0.0    0.0
-    cube                                    Shape                   177           1    0.0    0.0     0.0    0.0
-     cube.half                              Shape                   179           1    0.0    0.0     0.0    0.0
-    translate                               Shape                   176           1    0.0    0.0     0.0    0.0
-  main                                      Main                    142           1    0.0    0.0     0.3    0.3
-   animateTimes                             Main                    143           1    0.0    0.0     0.3    0.3
-    animateTimes.animateTimes'              Main                    144           1    0.0    0.0     0.3    0.3
-     animateTimes.animateTimes'.angle       Main                    173           1    0.0    0.0     0.0    0.0
-     seqList                                Main                    150        1649    0.0    0.0     0.0    0.0
-     animateTimes.animateTimes'.image       Main                    145           1    0.0    0.0     0.3    0.3
-      show                                  Image                   149           1    0.0    0.0     0.0    0.1
-       show.render                          Image                   152        1601    0.0    0.1     0.0    0.1
-        show.renderPixel                    Image                   187        1600    0.0    0.0     0.0    0.0
-       show.numberOfPixels                  Image                   151           1    0.0    0.0     0.0    0.0
-      render                                Main                    146           1    0.0    0.0     0.3    0.2
-       render.scene                         Main                    167           1    0.0    0.0     0.0    0.0
-        rotate                              Shape                   170           1    0.0    0.0     0.0    0.0
-         rotate.d2r                         Shape                   172           3    0.0    0.0     0.0    0.0
-        translate                           Shape                   168           1    0.0    0.0     0.0    0.0
-       renderImage                          Main                    147           1    0.0    0.0     0.3    0.2
-        renderImage.renderPixel             Main                    165           0    0.0    0.0     0.0    0.0
-         renderImage.renderPixel.shape      Main                    166           1    0.0    0.0     0.0    0.0
-        makeImage                           Image                   148           1    0.0    0.0     0.3    0.2
-         makeImage.pixels                   Image                   153           1    0.0    0.0     0.3    0.2
-          makeImage.indexValue              Image                   154        1600    0.0    0.0     0.3    0.2
-           makeImage.indexValue.x           Image                   159        1600    0.0    0.0     0.0    0.0
-           makeImage.indexValue.y           Image                   158        1600    0.0    0.0     0.0    0.0
-           renderImage.renderPixel          Main                    155        1600    0.0    0.0     0.3    0.1
-            renderImage.renderPixel.didHit' Main                    186        1640    0.0    0.0     0.0    0.0
-            renderImage.renderPixel.cast    Main                    163        1643    0.0    0.0     0.3    0.0
-             intersect                      Intersection            164        6554    0.1    0.0     0.3    0.0
-              max                           Vector                  184        1641    0.0    0.0     0.0    0.0
-              z                             Vector                  183        3280    0.0    0.0     0.0    0.0
-              y                             Vector                  182        3280    0.0    0.0     0.0    0.0
-              x                             Vector                  181        3282    0.0    0.0     0.0    0.0
-              min                           Vector                  180        1642    0.0    0.0     0.0    0.0
-              div                           Vector                  178        3282    0.0    0.0     0.0    0.0
-              rotateVector                  Intersection            171        3284    0.1    0.0     0.1    0.0
-              sub                           Vector                  169        6563    0.0    0.0     0.0    0.0
-            renderImage.renderPixel.ray     Main                    157        1642    0.0    0.0     0.0    0.0
-             makeRay                        Ray                     160        1643    0.0    0.0     0.0    0.0
-              makeRay.y                     Ray                     162        1643    0.0    0.0     0.0    0.0
-              makeRay.x                     Ray                     161        1642    0.0    0.0     0.0    0.0
-            renderImage.renderPixel.didHit  Main                    156        1600    0.0    0.0     0.0    0.0
- CAF                                        Intersection            139           0    0.0    0.0     0.0    0.0
-  epsilon                                   Intersection            185           1    0.0    0.0     0.0    0.0
- CAF                                        Image                   136           0    0.0    0.0     0.0    0.0
-  show                                      Image                   188           0    0.0    0.0     0.0    0.0
-   show.renderPixel                         Image                   189           0    0.0    0.0     0.0    0.0
- CAF                                        GHC.Conc.Signal         116           0    0.0    0.0     0.0    0.0
- CAF                                        GHC.IO.Encoding         109           0    0.0    0.0     0.0    0.0
- CAF                                        GHC.IO.Encoding.Iconv   107           0    0.0    0.0     0.0    0.0
- CAF                                        GHC.IO.Handle.FD         99           0    0.0    0.0     0.0    0.0
- CAF                                        GHC.IO.Handle.Text       97           0    0.0    0.0     0.0    0.0
- CAF                                        GHC.Event.Thread         80           0    0.0    0.0     0.0    0.0
+MAIN                                          MAIN                     71           0    3.5    1.7   100.0  100.0
+ main                                         Main                    211           0    0.0    0.0    96.2   98.0
+  animateTimes                                Main                    212           0    0.0    0.0    96.2   98.0
+   animateTimes.animateTimes'                 Main                    213         300    4.5    2.6    96.2   98.0
+    animateTimes.animateTimes'.angle          Main                    261         299    0.1    0.0     0.1    0.0
+    seqList                                   Main                    222      493051    0.3    0.0     0.3    0.0
+    animateTimes.animateTimes'.image          Main                    217         299    0.0    0.0    91.3   95.3
+     show                                     Image                   221         299    0.6    5.8     1.7   17.3
+      show.render                             Image                   224      478699    1.0   11.5     1.1   11.5
+       renderPixel                            Image                   269      478400    0.1    0.0     0.1    0.0
+      show.numberOfPixels                     Image                   223         299    0.0    0.0     0.0    0.0
+     render                                   Main                    218         299    0.0    0.0    89.6   78.0
+      render.scene                            Main                    255         299    0.1    0.0     0.1    0.0
+       rotate                                 Shape                   258         299    0.0    0.0     0.0    0.0
+        rotate.d2r                            Shape                   260         897    0.0    0.0     0.0    0.0
+       translate                              Shape                   256         299    0.0    0.0     0.0    0.0
+      renderImage                             Main                    219         299    0.0    0.0    89.5   78.0
+       renderImage.castValue                  Main                    238           0    0.0    0.0     0.0    0.0
+        renderImage.castValue.shape           Main                    254         299    0.0    0.0     0.0    0.0
+        renderImage.castValue.ray             Main                    239           0    0.0    0.0     0.0    0.0
+       makeImage                              Image                   220         299    0.0    0.0    89.5   78.0
+        makeImage.pixels                      Image                   225         299    0.7    0.4    89.5   78.0
+         makeImage.indexValue                 Image                   226      478400    1.9    6.4    88.8   77.6
+          makeImage.indexValue.x              Image                   233      478403    0.5    1.6     0.5    1.6
+          makeImage.indexValue.y              Image                   230      478402    0.4    1.6     0.4    1.6
+          renderImage.renderPixel             Main                    227      478400    0.3    4.0    86.0   67.9
+           renderImage.renderPixel.value'     Main                    229      492082    0.2    0.0    85.3   63.9
+            renderImage.castValueMany         Main                    231      492082    2.2    1.7    85.1   63.9
+             renderImage.castValueMany.value  Main                    235      492076    4.4    0.0    82.4   60.6
+              renderImage.castValue           Main                    236     1967551    4.1    0.0    78.0   60.6
+               renderImage.castValue.didHit   Main                    268     1966801    0.4    0.0     0.4    0.0
+               renderImage.castValue.cast     Main                    252     1967287    0.6    0.0    55.3   27.6
+                intersect                     Intersection            253     7854839   36.0    1.2    54.7   27.6
+                 max                          Vector                  267     1966531    0.0    0.0     0.0    0.0
+                 z                            Vector                  266     3931452    0.0    0.0     0.0    0.0
+                 y                            Vector                  265     3931813    0.0    0.0     0.0    0.0
+                 x                            Vector                  264     3932397    0.0    0.0     0.0    0.0
+                 min                          Vector                  263     1967211    0.0    0.0     0.0    0.0
+                 div                          Vector                  262     3933840    0.0    0.0     0.0    0.0
+                 rotateVector                 Intersection            259     3934377   18.6   26.4    18.6   26.4
+                 sub                          Vector                  257     7861642    0.0    0.0     0.0    0.0
+               renderImage.castValue.ray      Main                    237     1967524    1.2    0.0    18.2   33.0
+                makeRay                       Ray                     240     1967602    6.4    6.6    17.0   33.0
+                 makeRay.direction            Ray                     246     1967002    2.7   13.2     8.2   26.4
+                  normalize                   Vector                  248     1967095    3.2   13.2     5.5   13.2
+                   scalarmult                 Vector                  251     1966831    0.0    0.0     0.0    0.0
+                   mag                        Vector                  249     3931341    2.4    0.0     2.4    0.0
+                    squared_mag               Vector                  250     3931422    0.0    0.0     0.0    0.0
+                  sub                         Vector                  247     1966986    0.0    0.0     0.0    0.0
+                 makeRay.platePoint           Ray                     245     1967044    0.0    0.0     0.0    0.0
+                 makeRay.h                    Ray                     244     1967074    0.0    0.0     0.0    0.0
+                 makeRay.plateDistance        Ray                     243     1967213    2.4    0.0     2.4    0.0
+                 makeRay.fovX'                Ray                     242     1967284    0.0    0.0     0.0    0.0
+                 makeRay.w                    Ray                     241     1967363    0.0    0.0     0.0    0.0
+             renderImage.castValueMany.fy     Main                    234      492077    0.0    0.0     0.0    0.0
+             renderImage.castValueMany.fx     Main                    232      492079    0.5    1.7     0.5    1.7
+           renderImage.renderPixel.value      Main                    228      478400    0.4    0.0     0.4    0.0
+ CAF                                          Main                    141           0    0.0    0.0     0.3    0.3
+  animateTimes                                Main                    214           0    0.0    0.0     0.0    0.0
+   animateTimes.fps                           Main                    216           1    0.0    0.0     0.0    0.0
+   animateTimes.delay                         Main                    215           1    0.0    0.0     0.0    0.0
+  render                                      Main                    195           0    0.0    0.0     0.0    0.0
+   render.scene                               Main                    196           0    0.0    0.0     0.0    0.0
+    cube                                      Shape                   198           1    0.0    0.0     0.0    0.0
+     cube.half                                Shape                   200           1    0.0    0.0     0.0    0.0
+    translate                                 Shape                   197           1    0.0    0.0     0.0    0.0
+  renderImage                                 Main                    164           0    0.0    0.0     0.0    0.0
+   renderImage.renderPixel                    Main                    165           0    0.0    0.0     0.0    0.0
+    renderImage.renderPixel.value'            Main                    166           0    0.0    0.0     0.0    0.0
+     renderImage.castValueMany                Main                    167           0    0.0    0.0     0.0    0.0
+      renderImage.castValueMany.j             Main                    168           1    0.0    0.0     0.0    0.0
+  main                                        Main                    142           1    0.0    0.0     0.3    0.3
+   animateTimes                               Main                    143           1    0.0    0.0     0.3    0.3
+    animateTimes.animateTimes'                Main                    144           1    0.0    0.0     0.3    0.3
+     animateTimes.animateTimes'.angle         Main                    194           1    0.0    0.0     0.0    0.0
+     seqList                                  Main                    150        1649    0.0    0.0     0.0    0.0
+     animateTimes.animateTimes'.image         Main                    145           1    0.0    0.0     0.3    0.3
+      show                                    Image                   149           1    0.0    0.0     0.0    0.1
+       show.render                            Image                   152        1601    0.0    0.0     0.0    0.0
+        renderPixel                           Image                   208        1600    0.0    0.0     0.0    0.0
+       show.numberOfPixels                    Image                   151           1    0.0    0.0     0.0    0.0
+      render                                  Main                    146           1    0.0    0.0     0.3    0.3
+       render.scene                           Main                    188           1    0.0    0.0     0.0    0.0
+        rotate                                Shape                   191           1    0.0    0.0     0.0    0.0
+         rotate.d2r                           Shape                   193           3    0.0    0.0     0.0    0.0
+        translate                             Shape                   189           1    0.0    0.0     0.0    0.0
+       renderImage                            Main                    147           1    0.0    0.0     0.3    0.3
+        renderImage.castValue                 Main                    171           0    0.0    0.0     0.0    0.0
+         renderImage.castValue.shape          Main                    187           1    0.0    0.0     0.0    0.0
+         renderImage.castValue.ray            Main                    172           0    0.0    0.0     0.0    0.0
+        makeImage                             Image                   148           1    0.0    0.0     0.3    0.3
+         makeImage.pixels                     Image                   153           1    0.0    0.0     0.3    0.3
+          makeImage.indexValue                Image                   154        1600    0.0    0.0     0.3    0.3
+           makeImage.indexValue.x             Image                   161        1600    0.0    0.0     0.0    0.0
+           makeImage.indexValue.y             Image                   158        1600    0.0    0.0     0.0    0.0
+           renderImage.renderPixel            Main                    155        1600    0.0    0.0     0.3    0.2
+            renderImage.renderPixel.value'    Main                    157        1624    0.0    0.0     0.3    0.2
+             renderImage.castValueMany        Main                    159        1624    0.0    0.0     0.3    0.2
+              renderImage.castValueMany.value Main                    163        1624    0.0    0.0     0.3    0.2
+               renderImage.castValue          Main                    169        6495    0.0    0.0     0.3    0.2
+                renderImage.castValue.didHit  Main                    207        6493    0.0    0.0     0.0    0.0
+                renderImage.castValue.cast    Main                    185        6495    0.0    0.0     0.1    0.1
+                 intersect                    Intersection            186       25944    0.0    0.0     0.1    0.1
+                  max                         Vector                  205        6493    0.0    0.0     0.0    0.0
+                  z                           Vector                  204       12985    0.0    0.0     0.0    0.0
+                  y                           Vector                  203       12985    0.0    0.0     0.0    0.0
+                  x                           Vector                  202       12986    0.0    0.0     0.0    0.0
+                  min                         Vector                  201        6494    0.0    0.0     0.0    0.0
+                  div                         Vector                  199       12985    0.0    0.0     0.0    0.0
+                  rotateVector                Intersection            192       12989    0.1    0.1     0.1    0.1
+                  sub                         Vector                  190       25958    0.0    0.0     0.0    0.0
+                renderImage.castValue.ray     Main                    170        6495    0.0    0.0     0.1    0.1
+                 makeRay                      Ray                     173        6495    0.0    0.0     0.1    0.1
+                  makeRay.direction           Ray                     179        6496    0.0    0.0     0.0    0.1
+                   normalize                  Vector                  181        6496    0.0    0.0     0.0    0.0
+                    scalarmult                Vector                  184        6493    0.0    0.0     0.0    0.0
+                    mag                       Vector                  182       12986    0.0    0.0     0.0    0.0
+                     squared_mag              Vector                  183       12987    0.0    0.0     0.0    0.0
+                   sub                        Vector                  180        6496    0.0    0.0     0.0    0.0
+                  makeRay.platePoint          Ray                     178        6496    0.0    0.0     0.0    0.0
+                  makeRay.h                   Ray                     177        6496    0.0    0.0     0.0    0.0
+                  makeRay.plateDistance       Ray                     176        6494    0.0    0.0     0.0    0.0
+                  makeRay.fovX'               Ray                     175        6495    0.0    0.0     0.0    0.0
+                  makeRay.w                   Ray                     174        6495    0.0    0.0     0.0    0.0
+              renderImage.castValueMany.fy    Main                    162        1624    0.0    0.0     0.0    0.0
+              renderImage.castValueMany.fx    Main                    160        1624    0.0    0.0     0.0    0.0
+            renderImage.renderPixel.value     Main                    156        1600    0.0    0.0     0.0    0.0
+ CAF                                          Intersection            139           0    0.0    0.0     0.0    0.0
+  epsilon                                     Intersection            206           1    0.0    0.0     0.0    0.0
+ CAF                                          Image                   136           0    0.0    0.0     0.0    0.0
+  show                                        Image                   210           0    0.0    0.0     0.0    0.0
+  renderPixel                                 Image                   209           0    0.0    0.0     0.0    0.0
+ CAF                                          GHC.Conc.Signal         116           0    0.0    0.0     0.0    0.0
+ CAF                                          GHC.IO.Encoding         109           0    0.0    0.0     0.0    0.0
+ CAF                                          GHC.IO.Encoding.Iconv   107           0    0.0    0.0     0.0    0.0
+ CAF                                          GHC.IO.Handle.FD         99           0    0.0    0.0     0.0    0.0
+ CAF                                          GHC.IO.Handle.Text       97           0    0.0    0.0     0.0    0.0
+ CAF                                          GHC.Event.Thread         80           0    0.0    0.0     0.0    0.0

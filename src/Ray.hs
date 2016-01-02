@@ -16,8 +16,12 @@ ray_pointAtTime :: Ray -> Float -> Vec3
 ray_pointAtTime (Ray base dir) time = base `V.add` (dir `scalarmult` time)
 
 
-makeRay :: Int -> Int -> Float -> Float -> Float -> Ray
-makeRay rangeX rangeY xIndex yIndex pixelsPerUnit =
-  let x = (xIndex - fromIntegral rangeX / 2) / pixelsPerUnit
-      y = (yIndex - fromIntegral rangeY / 2) / pixelsPerUnit
-  in Ray (Vec3 x y 0) (Vec3 0 0 1)
+makeRay :: Float -> Int -> Int -> Float -> Float -> Ray
+makeRay fovX rangeX rangeY xIndex yIndex =
+  let w = fromIntegral rangeX
+      h = fromIntegral rangeY
+      fovX' = fovX / 180 * pi
+      plateDistance = w / (2 * tan (fovX' / 2))
+      platePoint = Vec3 (xIndex - w/2) (yIndex - h/2) (plateDistance)
+      direction = V.normalize $ platePoint `V.sub` (Vec3 0 0 0)
+  in Ray (Vec3 0 0 0) direction
