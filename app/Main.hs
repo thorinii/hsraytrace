@@ -44,20 +44,21 @@ render x y z =
 renderImage :: Shape -> Int -> Int -> Float -> Image
 renderImage scene width height pixelsPerUnit =
   let castValue x y =
-        let ray = makeRay width height x (fromIntegral height-y-1) pixelsPerUnit
+        let ray = makeRay width height x (fromIntegral height - y - 1) pixelsPerUnit
             shape = scene
             cast = intersect ray shape
             didHit = isJust cast
-        in if didHit then 1 else 0
+        in if didHit then 1.0 else 0.0
       castValueMany x y =
         let fx = fromIntegral x
             fy = fromIntegral y
             j = 0.2 -- jitter
             value =
-              castValue (fx-j) (fy-j) + castValue (fx) (fy-j) + castValue (fx+j) (fy-j) +
-              castValue (fx-j) (fy) + castValue (fx) (fy) + castValue (fx+j) (fy) +
-              castValue (fx-j) (fy+j) + castValue (fx) (fy+j) + castValue (fx+j) (fy+j)
-        in value
+              castValue (fx) (fy+j) +
+              castValue (fx) (fy) +
+              castValue (fx-j) (fy-j) +
+              castValue (fx+j) (fy-j)
+        in value / 4
       renderPixel x y =
         let value' = castValueMany x (y*2)
             value = par value' value'

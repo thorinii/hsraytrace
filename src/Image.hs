@@ -6,7 +6,7 @@ module Image (
 
 import Data.Vector.Unboxed (Vector, generate, (!))
 
-type Pixel = Int
+type Pixel = Float
 data Image = Image Int Int (Vector Pixel)
 
 instance Show Image where
@@ -20,17 +20,18 @@ instance Show Image where
     in (show width) ++ "x" ++ (show height) ++ " [\n" ++ render 0 0 ++ "]"
 
 renderPixel :: Pixel -> String
-renderPixel value = case value of
-                      0 -> " "
-                      1 -> "."
-                      2 -> ":"
-                      3 -> "-"
-                      4 -> "="
-                      5 -> "+"
-                      6 -> "*"
-                      7 -> "#"
-                      8 -> "%"
-                      _ -> "@"
+renderPixel value =
+  case value of
+    _ | value < 0.1 -> " "
+    _ | value < 0.2 -> "."
+    _ | value < 0.3 -> ":"
+    _ | value < 0.4 -> "-"
+    _ | value < 0.5 -> "="
+    _ | value < 0.6 -> "+"
+    _ | value < 0.7 -> "*"
+    _ | value < 0.8 -> "#"
+    _ | value < 0.9 -> "%"
+    _               -> "@"
 
 makeImage :: Int -> Int -> (Int -> Int -> Pixel) -> Image
 makeImage width height pixelValue =
