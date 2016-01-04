@@ -6,6 +6,8 @@ module Intersection (
 ) where
 
 import Prelude as P
+import Data.Maybe (fromMaybe)
+
 import Vector as V
 import Ray
 import Shape
@@ -34,6 +36,18 @@ intersect ray@(Ray base dir) (Box box_min box_max) =
   in if hit
      then Just $ Intersection point
      else Nothing
+
+intersect ray@(Ray base _) (GroupPair a b) =
+  let iaM = intersect ray a
+      ibM = intersect ray b
+      infinity = 1.0/0.0
+      d :: Maybe Intersection -> Maybe Float
+      d m = fmap (\(Intersection p) -> V.mag (p `V.sub` base)) m
+      distanceA = fromMaybe infinity (d iaM)
+      distanceB = fromMaybe infinity (d ibM)
+  in if distanceA < distanceB
+     then iaM
+     else ibM
 
 intersect (Ray base dir) (Translate inner translation) =
   let !translatedRay = Ray (base `V.sub` translation) dir

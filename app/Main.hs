@@ -29,7 +29,7 @@ animateTimes times =
       animateTimes' 0 = return ()
       animateTimes' left = do
         let angle = ((fromIntegral left) / (fromIntegral times) * 360)
-        let image = show $ render (angle * 18) (angle) (0)
+        let image = show $ render (angle * 18) (angle*angle*angle / 9000) angle
         let !_ = seqList image
         putStrLn $ image
         threadDelay delay
@@ -38,7 +38,10 @@ animateTimes times =
 
 -- render :: Image
 render x y z =
-  let scene = translate (Vec3 0 0 5) $ rotate 0 y 0 $ translate (Vec3 2 0 0) $ rotate x 0 z $ cube 1
+  let box1 = translate (Vec3 2 0 0) $ cube 1
+      box2 = translate (Vec3 (-2) 0 0) $ cube 1
+      boxes = rotate x 0 0 $ group box1 box2
+      scene = translate (Vec3 0 0 5) $ rotate 0 y 0 $ boxes
       fovX = 60 / 180 * pi
   in renderImage scene fovX 80 40
 

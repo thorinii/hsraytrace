@@ -1,7 +1,9 @@
 module Shape (
   Shape(Sphere, Plane, Box,
+        GroupPair,
         Translate, Rotate),
   cube,
+  group,
   translate, rotate
 ) where
 
@@ -16,6 +18,8 @@ data Shape = Sphere { sphere_position :: Vec3
                    , plane_distance :: Float }
            | Box { box_min :: Vec3
                  , box_max :: Vec3 }
+           | GroupPair { a :: Shape
+                       , b :: Shape }
            | Translate { translate_inner :: Shape
                        , translate_translation :: Vec3 }
            | Rotate { rotate_inner :: Shape
@@ -30,6 +34,8 @@ cube side = Box (Vec3 (-half) (-half) (-half))
                 (Vec3 half half half)
   where half = side / 2
 
+group :: Shape -> Shape -> Shape
+group a b = GroupPair a b
 
 translate :: Vec3 -> Shape -> Shape
 translate translation shape = Translate shape translation
