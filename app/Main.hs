@@ -25,11 +25,11 @@ main = do
 
 animateTimes times =
   let fps = 30
-      delay = 1 * 1000 * 1000 `P.div` fps
+      delay = (1 * 1000 * 1000) `P.div` fps
       animateTimes' 0 = return ()
       animateTimes' left = do
         let angle = ((fromIntegral left) / (fromIntegral times) * 360)
-        let image = show $ render (angle) (angle * 6) (angle / 4)
+        let image = show $ render (angle * 18) (angle) (0)
         let !_ = seqList image
         putStrLn $ image
         threadDelay delay
@@ -38,13 +38,14 @@ animateTimes times =
 
 -- render :: Image
 render x y z =
-  let scene = translate (Vec3 0 0 5) $ rotate x y z $ translate (Vec3 2 0 0) $ cube 1
-  in renderImage scene 40 40 8
+  let scene = translate (Vec3 0 0 5) $ rotate 0 y 0 $ translate (Vec3 2 0 0) $ rotate x 0 z $ cube 1
+      fovX = 60 / 180 * pi
+  in renderImage scene fovX 80 40
 
-renderImage :: Shape -> Int -> Int -> Float -> Image
-renderImage scene width height pixelsPerUnit =
+renderImage :: Shape -> Float -> Int -> Int -> Image
+renderImage scene fovX width height =
   let castValue x y =
-        let ray = makeRay 60 width height x (fromIntegral height - y - 1)
+        let ray = makeRay fovX width height x (fromIntegral height - y - 1)
             shape = scene
             cast = intersect ray shape
             didHit = isJust cast
@@ -52,9 +53,10 @@ renderImage scene width height pixelsPerUnit =
       castValueMany x y =
         let fx = fromIntegral x
             fy = fromIntegral y
-            j = 0.2 -- jitter
+            j = 0.33 -- jitter
             value =
-              castValue (fx) (fy+j) +
+              castValue (fx-j) (fy+j) +
+              castValue (fx+j) (fy+j) +
               castValue (fx) (fy) +
               castValue (fx-j) (fy-j) +
               castValue (fx+j) (fy-j)

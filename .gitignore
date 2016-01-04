@@ -1,4 +1,4 @@
 .stack-work
 *.swp
 *.ppm
-
+*.prof

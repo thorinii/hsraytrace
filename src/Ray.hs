@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 module Ray (
   Ray(Ray),
   ray_pointAtTime,
@@ -18,10 +19,9 @@ ray_pointAtTime (Ray base dir) time = base `V.add` (dir `scalarmult` time)
 
 makeRay :: Float -> Int -> Int -> Float -> Float -> Ray
 makeRay fovX rangeX rangeY xIndex yIndex =
-  let w = fromIntegral rangeX
-      h = fromIntegral rangeY
-      fovX' = fovX / 180 * pi
-      plateDistance = w / (2 * tan (fovX' / 2))
-      platePoint = Vec3 (xIndex - w/2) (yIndex - h/2) (plateDistance)
-      direction = V.normalize $ platePoint `V.sub` (Vec3 0 0 0)
+  let !w = fromIntegral rangeX
+      !h = fromIntegral rangeY
+      !plateDistance = w / (2 * tan (fovX / 2))
+      !platePoint = Vec3 (xIndex - w/2) (yIndex - h/2) (plateDistance)
+      !direction = V.normalize $ platePoint `V.sub` (Vec3 0 0 0)
   in Ray (Vec3 0 0 0) direction
