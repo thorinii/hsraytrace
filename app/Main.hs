@@ -29,7 +29,7 @@ animateTimes times =
       animateTimes' 0 = return ()
       animateTimes' left = do
         let angle = ((fromIntegral left) / (fromIntegral times) * 360)
-        let image = show $ render (angle * 18) (angle*angle*angle / 9000) angle
+        let image = show $ render (angle * 18) (angle*angle / 90) 0
         let !_ = seqList image
         putStrLn $ image
         threadDelay delay
@@ -38,26 +38,25 @@ animateTimes times =
 
 -- render :: Image
 render x y z =
-  let box1 = translate (Vec3 2 0 0) $ cube 1
+  let box1 = translate (Vec3 2 0 0) $ cube (sin (z/ 10) * 0.5 + 1)
       box2 = translate (Vec3 (-2) 0 0) $ cube 1
       boxes = rotate x 0 0 $ group box1 box2
-      scene = translate (Vec3 0 0 5) $ rotate 0 y 0 $ boxes
-      fovX = 60 / 180 * pi
+      !scene = translate (Vec3 0 0 5) $ rotate 0 y 0 $ rotate 0 0 z $ boxes
+      !fovX = 60 / 180 * pi
   in renderImage scene fovX 80 40
 
 renderImage :: Shape -> Float -> Int -> Int -> Image
 renderImage scene fovX width height =
   let castValue x y =
-        let ray = makeRay fovX width height x (fromIntegral height - y - 1)
-            shape = scene
-            cast = intersect ray shape
-            didHit = isJust cast
+        let !ray = makeRay fovX width height x (fromIntegral height - y - 1)
+            !cast = intersect ray scene
+            !didHit = isJust cast
         in if didHit then 1.0 else 0.0
       castValueMany x y =
         let fx = fromIntegral x
             fy = fromIntegral y
             j = 0.33 -- jitter
-            value =
+            !value =
               castValue (fx-j) (fy+j) +
               castValue (fx+j) (fy+j) +
               castValue (fx) (fy) +

@@ -38,13 +38,13 @@ intersect ray@(Ray base dir) (Box box_min box_max) =
      else Nothing
 
 intersect ray@(Ray base _) (GroupPair a b) =
-  let iaM = intersect ray a
-      ibM = intersect ray b
-      infinity = 1.0/0.0
+  let !iaM = intersect ray a
+      !ibM = intersect ray b
+      !infinity = 1.0/0.0
       d :: Maybe Intersection -> Maybe Float
       d m = fmap (\(Intersection p) -> V.mag (p `V.sub` base)) m
-      distanceA = fromMaybe infinity (d iaM)
-      distanceB = fromMaybe infinity (d ibM)
+      !distanceA = fromMaybe infinity (d iaM)
+      !distanceB = fromMaybe infinity (d ibM)
   in if distanceA < distanceB
      then iaM
      else ibM
