@@ -33,6 +33,10 @@ executable hsraytrace-exe
   build-depends:       base
                      , parallel
                      , hsraytrace
+                     , ncurses
+                     , clock
+                     , vector
+                     , transformers
   default-language:    Haskell2010
 
 test-suite hsraytrace-test
