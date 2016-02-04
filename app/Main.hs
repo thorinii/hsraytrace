@@ -5,6 +5,7 @@ module Main where
 import Prelude
 import qualified Prelude as P
 
+import Data.List (foldl')
 import Data.Maybe
 import Control.Concurrent (threadDelay)
 import Control.Monad.IO.Class (liftIO)
@@ -128,3 +129,72 @@ renderSceneToImage scene fovX width height =
             !value = value' -- par value' value'
         in value
   in makeImage width height renderPixel
+
+
+tmp =
+  let voxels = makeImage 10 10 (\x y -> if (x + y < 7 && x + y > 4) then 1 else 0)
+      px = 2.2 :: Float
+      py = 0 :: Float
+      dx = 0.4472135955 :: Float
+      dy = 0.894427191 :: Float
+
+      onGridX = px == (fromIntegral $ round px)
+  in if (onGridX) then
+       (floor (if (dx < 0) then px - 1 else px), floor py)
+     else
+       (floor px, floor (if (dy < 0) then py - 1 else py))
+
+indexInto :: Image -> (Int, Int) -> Pixel
+indexInto (Image w h d) (x, y) =
+  d ! (x + y * w)
+
+escaped :: Image -> (Int, Int) -> Bool
+escaped (Image w h _) (x, y) =
+  x < 0 || y < 0 || x >= w || y >= h
+
+marchToIntersection :: Image -> (Float, Float) -> (Float, Float) -> Maybe (Float, Float)
+marchToIntersection image point dir =
+  foldl' (\hit p ->
+            if isJust hit then hit
+            else let value = indexInto image (cellAt p dir)
+                 in if value > 0.0 then Just p else Nothing)
+          Nothing
+          $ marchTillEscape image point dir
+  -- P.takeWhile (\v -> v == 0.0) $ P.map (\p -> indexInto voxels (cellAt p (0.5,0.8))) $ marchTillEscape voxels (2.2, 0.0) (0.5, 0.8)
+
+marchTillEscape :: Image -> (Float, Float) -> (Float, Float) -> [(Float, Float)]
+marchTillEscape image point dir =
+  let testEscaped = \p -> let cell = cellAt p dir
+                          in not $ escaped image cell
+  in P.takeWhile testEscaped (marchIndefinitely point dir)
+
+marchIndefinitely :: (Float, Float) -> (Float, Float) -> [(Float, Float)]
+marchIndefinitely point dir =
+  let next = march point dir
+  in next : marchIndefinitely next dir
+
+march :: (Float, Float) -> (Float, Float) -> (Float, Float)
+march !point !dir =
+  let !cell = cellAt point dir
+      !next = nextLocation point cell dir
+  in next
+
+cellAt :: (Float, Float) -> (Float, Float) -> (Int, Int)
+cellAt (!x, !y) (!dx, !dy) =
+  let !onGridX = x == (fromIntegral $ round x)
+  in if onGridX then
+       (floor (if dx < 0 then x - 1 else x), floor y)
+     else
+       (floor x, floor (if dy < 0 then y - 1 else y))
+
+nextLocation :: (Float, Float) -> (Int, Int) -> (Float, Float) -> (Float, Float)
+nextLocation (x, y) (cellx, celly) (dx, dy) =
+  let b = y - (x * dy / dx)
+      xTry1 = (yTry1 - b) / (dy / dx)
+      yTry1 = fromIntegral celly + 1
+      xTry2 = fromIntegral cellx + 1
+      yTry2 = xTry2 * (dy / dx) + b
+  in if dy >= 0 then
+       if yTry1 < yTry2 then (xTry1, yTry1) else (xTry2, yTry2)
+     else
+       if yTry1 < yTry2 then (xTry2, yTry2) else (xTry1, yTry1)
