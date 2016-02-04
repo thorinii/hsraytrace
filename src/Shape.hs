@@ -1,8 +1,10 @@
 module Shape (
   Shape(Sphere, Plane, Box,
+        VoxelBox,
         GroupPair,
         Translate, Rotate),
   cube,
+  voxelBox,
   group,
   translate, rotate
 ) where
@@ -10,6 +12,7 @@ module Shape (
 import Prelude as P
 import Vector as V
 import Ray
+import Voxel
 
 
 data Shape = Sphere { sphere_position :: Vec3
@@ -18,6 +21,9 @@ data Shape = Sphere { sphere_position :: Vec3
                    , plane_distance :: Float }
            | Box { box_min :: Vec3
                  , box_max :: Vec3 }
+           | VoxelBox { box_min :: Vec3
+                      , box_max :: Vec3
+                      , box_voxels :: VoxelGrid }
            | GroupPair { a :: Shape
                        , b :: Shape }
            | Translate { translate_inner :: Shape
@@ -32,6 +38,13 @@ data Shape = Sphere { sphere_position :: Vec3
 cube :: Float -> Shape
 cube side = Box (Vec3 (-half) (-half) (-half))
                 (Vec3 half half half)
+  where half = side / 2
+
+
+voxelBox :: VoxelGrid -> Float -> Shape
+voxelBox grid side = VoxelBox (Vec3 (-half) (-half) (-half))
+                              (Vec3 half half half)
+                              grid
   where half = side / 2
 
 group :: Shape -> Shape -> Shape
