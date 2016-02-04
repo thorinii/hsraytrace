@@ -42,9 +42,9 @@ cube side = Box (Vec3 (-half) (-half) (-half))
 
 
 voxelBox :: VoxelGrid -> Float -> Shape
-voxelBox grid side = VoxelBox (Vec3 (-half) (-half) (-half))
-                              (Vec3 half half half)
-                              grid
+voxelBox grid@(VoxelGrid w h d _) side = VoxelBox (Vec3 0 0 0)
+                                                  (Vec3 (fromIntegral w) (fromIntegral h) (fromIntegral d))
+                                                  grid
   where half = side / 2
 
 group :: Shape -> Shape -> Shape

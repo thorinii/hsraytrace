@@ -103,7 +103,7 @@ generateAndRenderScene x y z =
   let box1 = translate (Vec3 2 0 0) $ cube (sin (z/ 10) * 0.5 + 1)
       box2 = translate (Vec3 (-2) 0 0) $ cube 1
       boxes = rotate x 0 0 $ group box1 box2
-      !scene = translate (Vec3 0 0 5) $ rotate 0 y 0 $ rotate 0 0 z $ voxelBox voxels 1
+      !scene = translate (Vec3 0 ((sin (x/500))*8) 30) $ rotate 0 y 0 $ rotate 0 0 z $ voxelBox voxels 1
       !fovX = 60 / 180 * pi
   in renderSceneToImage scene fovX 80 40
 
@@ -126,10 +126,10 @@ renderSceneToImage scene fovX width height =
               castValue (fx+j) (fy-j)
         in value / 4
       renderPixel x y =
-        let value' = castValueMany x (y*2)
+        let value' = castValueMany x ((y - height `P.div` 2)*2)
             !value = value' -- par value' value'
         in value
   in makeImage width height renderPixel
 
 
-voxels = makeVoxelGrid 10 10 10 (\(Vec3i x y z) -> if (x + y < 7 && x + y > 4) then True else False)
+voxels = makeVoxelGrid 10 10 10 (\(Vec3i x y z) -> True)

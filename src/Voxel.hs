@@ -5,7 +5,9 @@ module Voxel (
   VoxelGrid(VoxelGrid),
   makeVoxelGrid,
   indexIntoVoxelGrid,
-  marchToIntersection
+  marchToIntersection,
+  marchTillEscape,
+  march, cellAt, nextLocation
 ) where
 
 import Data.Maybe (isJust)
@@ -14,6 +16,10 @@ import Data.Vector.Unboxed (Vector, generate, (!))
 import Vector (Vec3(Vec3))
 
 data Vec3i = Vec3i !Int !Int !Int
+
+instance Show Vec3i where
+  show (Vec3i x y z) = "i(" ++ show x ++ "," ++ show y ++ "," ++ show z ++ ")"
+
 
 type Voxel = Bool
 data VoxelGrid = VoxelGrid !Int !Int !Int (Vector Voxel)
@@ -36,8 +42,6 @@ indexIntoVoxelGrid (VoxelGrid width height depth values) (Vec3i x y z) =
   values ! (x + y * width + z * width * height)
 
 
-
-
 marchToIntersection :: VoxelGrid -> Vec3 -> Vec3 -> Maybe Vec3
 marchToIntersection grid point dir =
   foldl' (\hit p ->
@@ -56,7 +60,7 @@ marchTillEscape image point dir =
 marchIndefinitely :: Vec3 -> Vec3 -> [Vec3]
 marchIndefinitely point dir =
   let next = march point dir
-  in next : marchIndefinitely next dir
+  in take 100 $ next : marchIndefinitely next dir
 
 march :: Vec3 -> Vec3 -> Vec3
 march !point !dir =
@@ -92,9 +96,12 @@ nextLocation (Vec3 x y z) (Vec3i cellx celly cellz) (Vec3 dx dy dz) =
       tryX = Vec3 xTryX yTryX zTryX
       tryY = Vec3 xTryY yTryY zTryY
       tryZ = Vec3 xTryZ yTryZ zTryZ
-      xIsSmallest = abs (xTryX - x) < abs (xTryY - x) && abs (xTryX - x) < abs (xTryZ - x)
-      yIsSmallest = abs (yTryY - y) < abs (yTryX - y) && abs (yTryY - y) < abs (yTryZ - y)
-      zIsSmallest = abs (zTryZ - z) < abs (zTryX - z) && abs (zTryZ - z) < abs (zTryY - z)
+      xOp = if dx >= 0 then (<) else (>)
+      yOp = if dy >= 0 then (<) else (>)
+      zOp = if dz >= 0 then (<) else (>)
+      xIsSmallest = abs (xTryX - x) `xOp` abs (xTryY - x) && abs (xTryX - x) `xOp` abs (xTryZ - x)
+      yIsSmallest = abs (yTryY - y) `yOp` abs (yTryX - y) && abs (yTryY - y) `yOp` abs (yTryZ - y)
+      zIsSmallest = abs (zTryZ - z) `zOp` abs (zTryX - z) && abs (zTryZ - z) `zOp` abs (zTryY - z)
   in if xIsSmallest then tryX
      else if yIsSmallest then tryY
      else tryZ
