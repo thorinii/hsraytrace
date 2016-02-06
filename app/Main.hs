@@ -32,7 +32,7 @@ main = runCurses $ do
 
 runGameLoop :: Window -> Curses ()
 runGameLoop w = do
-  let loop start previous = do
+  let loop start previous minFps maxFps = do
         now <- getNow
         let uptime = now - start
             uptimeMillis = microsFromTimeStamp uptime `P.div` 1000
@@ -41,11 +41,13 @@ runGameLoop w = do
             fps = if dtMicro == 0
                   then 0
                   else 1000000 `P.div` dtMicro
-        updateWindow w $ drawGame uptimeMillis fps
+        updateWindow w $ drawGame uptimeMillis fps minFps maxFps
         render
         loop start now
+             (P.min fps (if uptimeMillis < 2000 then 1000 else minFps))
+             (P.max fps (if uptimeMillis < 2000 then 0 else maxFps))
   startTime <- getNow
-  loop startTime startTime
+  loop startTime startTime 0 1000
 
 getNow :: Curses Clock.TimeSpec
 getNow = liftIO $ Clock.getTime Clock.Monotonic
@@ -54,12 +56,16 @@ microsFromTimeStamp :: Clock.TimeSpec -> Int64
 microsFromTimeStamp timestamp =
   (Clock.sec timestamp) * 1000000 + (Clock.nsec timestamp) `P.div` 1000
 
-drawGame :: Int64 -> Int64 -> Update ()
-drawGame uptimeMillis fps = do
+drawGame :: Int64 -> Int64 -> Int64 -> Int64 -> Update ()
+drawGame uptimeMillis fps minFps maxFps = do
   moveCursor 0 0
   clearLine
   drawString (show fps)
-  drawString " fps"
+  drawString " fps  "
+  drawString (show minFps)
+  drawString " min  "
+  drawString (show maxFps)
+  drawString " max"
   moveCursor 1 1
   drawScene uptimeMillis
 
@@ -100,10 +106,7 @@ drawPixel value =
 
 generateAndRenderScene :: Float -> Float -> Float -> Image
 generateAndRenderScene x y z =
-  let box1 = translate (Vec3 2 0 0) $ cube (sin (z/ 10) * 0.5 + 1)
-      box2 = translate (Vec3 (-2) 0 0) $ cube 1
-      boxes = rotate x 0 0 $ group box1 box2
-      !scene = translate (Vec3 0 ((sin (x/500))*8) 30) $ rotate 0 y 0 $ rotate 0 0 z $ voxelBox voxels 1
+  let !scene = translate (Vec3 0 ((sin (x/500))*8) 30) $ rotate 0 y 0 $ rotate 0 0 z $ voxelBox voxels 1
       !fovX = 60 / 180 * pi
   in renderSceneToImage scene fovX 80 40
 
@@ -124,7 +127,7 @@ renderSceneToImage scene fovX width height =
               castValue (fx) (fy) +
               castValue (fx-j) (fy-j) +
               castValue (fx+j) (fy-j)
-        in value / 4
+        in value / 5
       renderPixel x y =
         let value' = castValueMany x ((y - height `P.div` 2)*2)
             !value = value' -- par value' value'
@@ -132,4 +135,4 @@ renderSceneToImage scene fovX width height =
   in makeImage width height renderPixel
 
 
-voxels = makeVoxelGrid 10 10 10 (\(Vec3i x y z) -> True)
+voxels = makeVoxelGrid 10 10 10 (\(Vec3i x y z) -> not ((x > 1 && x < 5 && y > 1 && y < 5) || (z > 1 && z < 5 && y > 1 && y < 5) || (z > 1 && z < 5 && x > 1 && x < 5)))

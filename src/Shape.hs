@@ -1,9 +1,7 @@
 module Shape (
-  Shape(Sphere, Plane, Box,
-        VoxelBox,
+  Shape(VoxelBox,
         GroupPair,
         Translate, Rotate),
-  cube,
   voxelBox,
   group,
   translate, rotate
@@ -15,16 +13,7 @@ import Ray
 import Voxel
 
 
-data Shape = Sphere { sphere_position :: Vec3
-                    , sphere_radius :: Float }
-           | Plane { plane_normal :: Vec3
-                   , plane_distance :: Float }
-           | Box { box_min :: Vec3
-                 , box_max :: Vec3 }
-           | VoxelBox { box_min :: Vec3
-                      , box_max :: Vec3
-                      , box_voxels :: VoxelGrid }
-           | GroupPair { a :: Shape
+data Shape = GroupPair { a :: Shape
                        , b :: Shape }
            | Translate { translate_inner :: Shape
                        , translate_translation :: Vec3 }
@@ -32,13 +21,22 @@ data Shape = Sphere { sphere_position :: Vec3
                     , rotate_x :: Float
                     , rotate_y :: Float
                     , rotate_z :: Float }
+          --  | Sphere { sphere_position :: Vec3
+          --           , sphere_radius :: Float }
+          --  | Plane { plane_normal :: Vec3
+          --          , plane_distance :: Float }
+          --  | Box { box_min :: Vec3
+          --        , box_max :: Vec3 }
+           | VoxelBox { box_min :: Vec3
+                      , box_max :: Vec3
+                      , box_voxels :: VoxelGrid }
   deriving (Show)
-
-
-cube :: Float -> Shape
-cube side = Box (Vec3 (-half) (-half) (-half))
-                (Vec3 half half half)
-  where half = side / 2
+--
+--
+-- cube :: Float -> Shape
+-- cube side = Box (Vec3 (-half) (-half) (-half))
+--                 (Vec3 half half half)
+--   where half = side / 2
 
 
 voxelBox :: VoxelGrid -> Float -> Shape

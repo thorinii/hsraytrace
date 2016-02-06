@@ -5,13 +5,10 @@ module Voxel (
   VoxelGrid(VoxelGrid),
   makeVoxelGrid,
   indexIntoVoxelGrid,
-  marchToIntersection,
   marchTillEscape,
   march, cellAt, nextLocation
 ) where
 
-import Data.Maybe (isJust)
-import Data.List (foldl')
 import Data.Vector.Unboxed (Vector, generate, (!))
 import Vector (Vec3(Vec3))
 
@@ -37,19 +34,10 @@ makeVoxelGrid width height depth pixelValue =
       pixels = generate (width*height*depth) indexValue
   in VoxelGrid width height depth pixels
 
+{-# INLINE indexIntoVoxelGrid #-}
 indexIntoVoxelGrid :: VoxelGrid -> Vec3i -> Voxel
 indexIntoVoxelGrid (VoxelGrid width height depth values) (Vec3i x y z) =
   values ! (x + y * width + z * width * height)
-
-
-marchToIntersection :: VoxelGrid -> Vec3 -> Vec3 -> Maybe Vec3
-marchToIntersection grid point dir =
-  foldl' (\hit p ->
-            if isJust hit then hit
-            else let value = indexIntoVoxelGrid grid (cellAt p dir)
-                 in if value then Just p else Nothing)
-          Nothing
-          $ marchTillEscape grid point dir
 
 marchTillEscape :: VoxelGrid -> Vec3 -> Vec3 -> [Vec3]
 marchTillEscape image point dir =
@@ -62,12 +50,14 @@ marchIndefinitely point dir =
   let next = march point dir
   in next : marchIndefinitely next dir
 
+{-# INLINE march #-}
 march :: Vec3 -> Vec3 -> Vec3
 march !point !dir =
   let !cell = cellAt point dir
       !next = nextLocation point cell dir
   in next
 
+{-# INLINE cellAt #-}
 cellAt :: Vec3 -> Vec3 -> Vec3i
 cellAt (Vec3 !x !y !z) (Vec3 !dx !dy !dz) =
   let !onGridX = x == (fromIntegral $ round x)
@@ -80,6 +70,7 @@ cellAt (Vec3 !x !y !z) (Vec3 !dx !dy !dz) =
        else
          Vec3i (floor x) (floor y) (floor (if dz < 0 then z - 1 else z))
 
+{-# INLINE nextLocation #-}
 nextLocation :: Vec3 -> Vec3i -> Vec3 -> Vec3
 nextLocation (Vec3 x y z) (Vec3i cellx celly cellz) (Vec3 dx dy dz) =
   let !cellxF = fromIntegral cellx
@@ -100,6 +91,7 @@ nextLocation (Vec3 x y z) (Vec3i cellx celly cellz) (Vec3 dx dy dz) =
      else if yIsSmallest then tryY
      else tryZ
 
+{-# INLINE escaped #-}
 escaped :: VoxelGrid -> Vec3i -> Bool
 escaped (VoxelGrid w h d _) (Vec3i x y z) =
   x < 0 || y < 0 || z < 0 || x >= w || y >= h || z >= d
