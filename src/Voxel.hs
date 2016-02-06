@@ -60,7 +60,7 @@ marchTillEscape image point dir =
 marchIndefinitely :: Vec3 -> Vec3 -> [Vec3]
 marchIndefinitely point dir =
   let next = march point dir
-  in take 5000 $ next : marchIndefinitely next dir
+  in next : marchIndefinitely next dir
 
 march :: Vec3 -> Vec3 -> Vec3
 march !point !dir =
@@ -82,26 +82,20 @@ cellAt (Vec3 !x !y !z) (Vec3 !dx !dy !dz) =
 
 nextLocation :: Vec3 -> Vec3i -> Vec3 -> Vec3
 nextLocation (Vec3 x y z) (Vec3i cellx celly cellz) (Vec3 dx dy dz) =
-  let x2y = y - (x * dy / dx) -- TODO: use t to determine best
-      x2z = z - (x * dz / dx)
-      xTryX = if dx >= 0 then fromIntegral cellx + 1 else fromIntegral cellx
-      yTryX = xTryX * (dy / dx) + x2y
-      zTryX = xTryX * (dz / dx) + x2z
-      yTryY = if dy >= 0 then fromIntegral celly + 1 else fromIntegral celly
-      xTryY = (yTryY - x2y) / (dy / dx)
-      zTryY = xTryY * (dz / dx) + x2z
-      zTryZ = if dz >= 0 then fromIntegral cellz + 1 else fromIntegral cellz
-      xTryZ = (zTryZ - x2z) / (dz / dx)
-      yTryZ = xTryZ * (dy / dx) + x2y
-      tryX = Vec3 xTryX yTryX zTryX
-      tryY = Vec3 xTryY yTryY zTryY
-      tryZ = Vec3 xTryZ yTryZ zTryZ
-      xOp = if dx >= 0 then (<) else (>)
-      yOp = if dy >= 0 then (<) else (>)
-      zOp = if dz >= 0 then (<) else (>)
-      xIsSmallest = abs (xTryX - x) `xOp` abs (xTryY - x) && abs (xTryX - x) `xOp` abs (xTryZ - x)
-      yIsSmallest = abs (yTryY - y) `yOp` abs (yTryX - y) && abs (yTryY - y) `yOp` abs (yTryZ - y)
-      zIsSmallest = abs (zTryZ - z) `zOp` abs (zTryX - z) && abs (zTryZ - z) `zOp` abs (zTryY - z)
+  let !cellxF = fromIntegral cellx
+      !cellyF = fromIntegral celly
+      !cellzF = fromIntegral cellz
+      !x_ofx = if dx >= 0 then cellxF + 1 else (if cellxF == x then cellxF - 1 else cellxF)
+      !y_ofy = if dy >= 0 then cellyF + 1 else (if cellyF == y then cellyF - 1 else cellyF)
+      !z_ofz = if dz >= 0 then cellzF + 1 else (if cellzF == z then cellzF - 1 else cellzF)
+      !t_ofx = (x_ofx - x) / dx
+      !t_ofy = (y_ofy - y) / dy
+      !t_ofz = (z_ofz - z) / dz
+      !xIsSmallest = t_ofx < t_ofy && t_ofx < t_ofz
+      !yIsSmallest = t_ofy < t_ofx && t_ofy < t_ofz
+      !tryX = Vec3 x_ofx (t_ofx * dy + y) (t_ofx * dz + z)
+      !tryY = Vec3 (t_ofy * dx + x) y_ofy (t_ofy * dz + z)
+      !tryZ = Vec3 (t_ofz * dx + x) (t_ofz * dy + y) z_ofz
   in if xIsSmallest then tryX
      else if yIsSmallest then tryY
      else tryZ
