@@ -60,7 +60,7 @@ marchTillEscape image point dir =
 marchIndefinitely :: Vec3 -> Vec3 -> [Vec3]
 marchIndefinitely point dir =
   let next = march point dir
-  in take 100 $ next : marchIndefinitely next dir
+  in take 5000 $ next : marchIndefinitely next dir
 
 march :: Vec3 -> Vec3 -> Vec3
 march !point !dir =
@@ -82,15 +82,15 @@ cellAt (Vec3 !x !y !z) (Vec3 !dx !dy !dz) =
 
 nextLocation :: Vec3 -> Vec3i -> Vec3 -> Vec3
 nextLocation (Vec3 x y z) (Vec3i cellx celly cellz) (Vec3 dx dy dz) =
-  let x2y = y - (x * dy / dx)
+  let x2y = y - (x * dy / dx) -- TODO: use t to determine best
       x2z = z - (x * dz / dx)
-      xTryX = fromIntegral cellx + 1
+      xTryX = if dx >= 0 then fromIntegral cellx + 1 else fromIntegral cellx
       yTryX = xTryX * (dy / dx) + x2y
       zTryX = xTryX * (dz / dx) + x2z
-      yTryY = fromIntegral celly + 1
+      yTryY = if dy >= 0 then fromIntegral celly + 1 else fromIntegral celly
       xTryY = (yTryY - x2y) / (dy / dx)
       zTryY = xTryY * (dz / dx) + x2z
-      zTryZ = fromIntegral cellz + 1
+      zTryZ = if dz >= 0 then fromIntegral cellz + 1 else fromIntegral cellz
       xTryZ = (zTryZ - x2z) / (dz / dx)
       yTryZ = xTryZ * (dy / dx) + x2y
       tryX = Vec3 xTryX yTryX zTryX
