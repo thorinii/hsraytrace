@@ -13,6 +13,8 @@ import Control.Parallel (par)
 import qualified System.Clock as Clock
 
 import Data.Vector.Unboxed ((!))
+import Data.Array.Repa as R hiding (Shape)
+import Data.Array.Repa.Index (ix2)
 import GHC.Int (Int64)
 
 import Vector
@@ -74,24 +76,28 @@ drawScene uptimeMillis =
   let angle = ((fromIntegral uptimeMillis) / 10000 * 360)
   in drawImage $ generateAndRenderScene (angle * 18) (angle) 0
 
-drawImage :: Image -> Update ()
-drawImage (Image width height pixels) =
-  let numberOfPixels = width*height
+drawImage :: Image R.U -> Update ()
+drawImage (Image pixels) =
+  let (Z :. width :. height) = R.extent pixels
       render :: Int -> Int -> Update ()
-      render index _ | index == numberOfPixels = return ()
-      render index counter = do
-        -- moveCursor counter (index / width)
-        drawPixel (pixels ! index)
-        if counter == width
-        then do
+      render x y | x >= width && y >= height = return ()
+      render x y | x >= width = do
+        drawString "\n"
+        render 0 (y+1)
+      render x y =
+        if y >= height then return ()
+        else if x >= width then do
           drawString "\n"
-          render (index+1) 1
-        else render (index+1) (counter+1)
-  in render 0 1
+          render 0 (y+1)
+        else do
+          drawPixel (pixels R.! (ix2 x y))
+          render (x+1) y
+  in render 0 0
 
 drawPixel :: Pixel -> Update ()
 drawPixel value =
   drawString $ case value of
+    _ | value <   0 -> "D"
     _ | value < 0.1 -> " "
     _ | value < 0.2 -> "."
     _ | value < 0.3 -> ":"
@@ -104,19 +110,22 @@ drawPixel value =
     _               -> "@"
 
 
-generateAndRenderScene :: Float -> Float -> Float -> Image
+generateAndRenderScene :: Float -> Float -> Float -> Image R.U
 generateAndRenderScene x y z =
-  let !scene = translate (Vec3 0 ((sin (x/500))*8) 30) $ rotate 0 y 0 $ rotate 0 0 z $ voxelBox voxels 1
+  -- $ rotate 0 y 0 $ rotate 0 0 z
+  let !scene = translate (Vec3 0 ((sin (x/500))*6) 15) $ voxelBox voxels 1
       !fovX = 60 / 180 * pi
-  in renderSceneToImage scene fovX 80 40
+  in evaluateImage $ renderSceneToImage scene fovX 80 40
 
-renderSceneToImage :: Shape -> Float -> Int -> Int -> Image
+renderSceneToImage :: Shape -> Float -> Int -> Int -> Image R.D
 renderSceneToImage scene fovX width height =
   let castValue x y =
         let !ray = makeRay fovX width height x (fromIntegral height - y - 1)
             !cast = intersect ray scene
-            !didHit = isJust cast
-        in if didHit then 1.0 else 0.0
+            !value = case cast of
+                       Just (Intersection _ (Vec3 nx ny nz)) -> 1
+                       otherwise -> 0.0
+        in value
       castValueMany x y =
         let fx = fromIntegral x
             fy = fromIntegral y
@@ -124,9 +133,9 @@ renderSceneToImage scene fovX width height =
             !value =
               castValue (fx-j) (fy+j) +
               castValue (fx+j) (fy+j) +
-              castValue (fx) (fy) +
               castValue (fx-j) (fy-j) +
-              castValue (fx+j) (fy-j)
+              castValue (fx+j) (fy-j) +
+              castValue (fx) (fy)
         in value / 5
       renderPixel x y =
         let value' = castValueMany x ((y - height `P.div` 2)*2)

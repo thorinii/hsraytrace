@@ -2,7 +2,8 @@
 module Intersection (
   Intersection(Intersection),
   intersect,
-  rotateVector
+  rotateVector,
+  marchToIntersection
 ) where
 
 import Prelude as P
@@ -12,10 +13,11 @@ import Data.Maybe (fromMaybe, isJust)
 import Vector as V
 import Ray
 import Shape
-import Voxel (VoxelGrid(VoxelGrid), indexIntoVoxelGrid, cellAt, marchTillEscape)
+import Voxel (Vec3i(Vec3i), VoxelGrid(VoxelGrid), indexIntoVoxelGrid, cellAt, marchTillEscape)
 
 
-data Intersection = Intersection { intersection_point :: !Vec3 }
+data Intersection = Intersection { intersection_point :: !Vec3
+                                 , intersection_normal :: !Vec3 }
   deriving (Show)
 
 
@@ -41,6 +43,38 @@ intersect :: Ray -> Shape -> Maybe Intersection
 --      then Just $ Intersection point
 --      else Nothing
 
+
+intersect ray@(Ray base _) (GroupPair a b) =
+  let !iaM = intersect ray a
+      !ibM = intersect ray b
+      !infinity = 1.0/0.0
+      d :: Maybe Intersection -> Maybe Float
+      d m = fmap (\(Intersection p _) -> V.mag (p `V.sub` base)) m
+      !distanceA = fromMaybe infinity (d iaM)
+      !distanceB = fromMaybe infinity (d ibM)
+  in if distanceA < distanceB
+     then iaM
+     else ibM
+
+intersect (Ray base dir) (Translate inner translation) =
+  let !translatedRay = Ray (base `V.sub` translation) dir
+      !result = intersect translatedRay inner
+      !mapped = case result of
+                  Just (Intersection p n) -> Just $ Intersection (p `V.add` translation) n
+                  otherwise -> Nothing
+  in mapped
+
+intersect (Ray base dir) (Rotate inner x y z) =
+  let !newBase = rotateVector (-x) (-y) (-z) base
+      !newDir = rotateVector (-x) (-y) (-z) dir
+      !rotatedRay = Ray newBase newDir
+      !result = intersect rotatedRay inner
+      !mapped = case result of
+                  Just (Intersection p n) -> Just $ Intersection (rotateVector x y z p) n
+                  otherwise -> Nothing
+  in mapped
+
+
 intersect ray@(Ray base dir) (VoxelBox box_min box_max grid) =
   let !tMin = (box_min `V.sub` base) `V.div` dir
       !tMax = (box_max `V.sub` base) `V.div` dir
@@ -51,40 +85,30 @@ intersect ray@(Ray base dir) (VoxelBox box_min box_max grid) =
       !hit = timeNear > epsilon && timeNear < timeFar
       point = ray_pointAtTime ray timeNear
   in if hit
-     then fmap (\p -> Intersection p) (marchToIntersection grid point dir)
+     then marchToIntersection grid point dir
      else Nothing
-
-intersect ray@(Ray base _) (GroupPair a b) =
-  let !iaM = intersect ray a
-      !ibM = intersect ray b
-      !infinity = 1.0/0.0
-      d :: Maybe Intersection -> Maybe Float
-      d m = fmap (\(Intersection p) -> V.mag (p `V.sub` base)) m
-      !distanceA = fromMaybe infinity (d iaM)
-      !distanceB = fromMaybe infinity (d ibM)
-  in if distanceA < distanceB
-     then iaM
-     else ibM
-
-intersect (Ray base dir) (Translate inner translation) =
-  let !translatedRay = Ray (base `V.sub` translation) dir
-  in intersect translatedRay inner
-
-intersect (Ray base dir) (Rotate inner x y z) =
-  let !newBase = rotateVector (-x) (-y) (-z) base
-      !newDir = rotateVector (-x) (-y) (-z) dir
-      !rotatedRay = Ray newBase newDir
-  in intersect rotatedRay inner
-
-
-marchToIntersection :: VoxelGrid -> Vec3 -> Vec3 -> Maybe Vec3
-marchToIntersection grid point dir =
+     
+{-# INLINE marchToIntersection #-}
+marchToIntersection :: VoxelGrid -> Vec3 -> Vec3 -> Maybe Intersection
+marchToIntersection grid point dir@(Vec3 dx dy dz) =
   foldl' (\hit p ->
             if isJust hit then hit
-            else let value = indexIntoVoxelGrid grid (cellAt p dir)
-                 in if value then Just p else Nothing)
-          Nothing
-          $ marchTillEscape grid point dir
+            else let cell@(Vec3i cx cy cz) = cellAt p dir
+                 in case (indexIntoVoxelGrid grid cell) of
+                     True ->
+                       let (Vec3 px py pz) = p
+                           !normal =
+                             if (fromIntegral cx) == px then
+                               Vec3 (if dx > 0 then -1 else 1) 0 0
+                             else if (fromIntegral cy) == py then
+                               Vec3 0 (if dy > 0 then -1 else 1) 0
+                             else
+                               Vec3 0 0 (if dz > 0 then -1 else 1)
+                       in Just $ Intersection p normal
+                     otherwise -> Nothing
+         )
+         Nothing
+         (marchTillEscape grid point dir)
 
 {-# INLINE rotateVector #-}
 rotateVector :: Float -> Float -> Float -> Vec3 -> Vec3
